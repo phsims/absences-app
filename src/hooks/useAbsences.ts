@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import type { Absence } from "../types/Absences";
 
 const baseUrl = import.meta.env.VITE_BASE_API;
@@ -8,7 +8,7 @@ export function useAbsences() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const fetchAbsences = async () => {
+  const fetchAbsences = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`${baseUrl}/absences`);
@@ -21,7 +21,7 @@ export function useAbsences() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return { data, loading, error, fetchAbsences };
 }
