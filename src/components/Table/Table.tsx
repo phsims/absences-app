@@ -6,7 +6,11 @@ import {
   Table as MuiTable,
   TableHead,
   TableBody,
+  TableSortLabel,
+  Box,
 } from "@mui/material";
+import { visuallyHidden } from "@mui/utils";
+import type { Order } from "./functions";
 
 // * This is overkill for this app but a good example of a reusable table.  */
 export type TableRowProps = {
@@ -16,6 +20,7 @@ export type TableRowProps = {
 export type HeaderCellProps = {
   id: string | number;
   label: string;
+  sortable?: boolean;
 };
 
 export type TableProps = {
@@ -25,7 +30,13 @@ export type TableProps = {
   error?: string;
   headerRows: HeaderCellProps[];
   data?: TableRowProps[];
+  order: Order;
+  orderBy: string;
   selectRow: (id: number) => void;
+  onRequestSort: (
+    event: React.MouseEvent<unknown>,
+    property: keyof TableRowProps,
+  ) => void;
 };
 
 export function Table({
@@ -35,8 +46,17 @@ export function Table({
   error,
   headerRows,
   data,
-  selectRow
+  order,
+  orderBy,
+  selectRow,
+  onRequestSort,
 }: TableProps) {
+
+  const createSortHandler =
+    (property: keyof TableRowProps) => (event: React.MouseEvent<unknown>) => {
+      onRequestSort(event, property);
+    };
+
   if (loading) {
     return (
       <Skeleton width={width} height={height} aria-label={`table loading`} />
@@ -49,8 +69,30 @@ export function Table({
         {headerRows && (
           <TableHead>
             <TableRow>
-              {headerRows.map(({id, label}) => (
-                <TableCell key={`header-${id}`}>{label}</TableCell>
+              {headerRows.map(({ id, label, sortable = true }) => (
+                <TableCell
+                  key={id}
+                  sortDirection={orderBy === id ? order : false}
+                >
+                  {sortable ? (
+                    <TableSortLabel
+                      active={orderBy === id}
+                      direction={orderBy === id ? order : "asc"}
+                      onClick={createSortHandler(id as keyof TableRowProps)}
+                    >
+                      {label}
+                      {orderBy === id ? (
+                        <Box component="span" sx={visuallyHidden}>
+                          {order === "desc"
+                            ? "sorted descending"
+                            : "sorted ascending"}
+                        </Box>
+                      ) : null}
+                    </TableSortLabel>
+                  ) : (
+                    label
+                  )}
+                </TableCell>
               ))}
             </TableRow>
           </TableHead>
@@ -64,7 +106,12 @@ export function Table({
             </TableRow>
           ) : (
             data?.map((row) => (
-              <TableRow key={row.id.toString()} data-testid={row.id} onClick={() => selectRow(row.id)}  sx={{ ":hover": { backgroundColor: 'info.light' } }} >
+              <TableRow
+                key={row.id.toString()}
+                data-testid={row.id}
+                onClick={() => selectRow(row.id)}
+                sx={{ ":hover": { backgroundColor: "info.light" } }}
+              >
                 {headerRows.map(({ id: headerId }) => (
                   <TableCell key={`${row.id}-${headerId}`}>
                     {String(row[headerId] ?? "")}
@@ -78,3 +125,4 @@ export function Table({
     </TableContainer>
   );
 }
+

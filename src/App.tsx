@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { Table, type TableProps } from "./components/Table/Table";
 import { getAbsenceTypeLabel, getEndDate } from "./utils/utils";
+import { getComparator, type Order } from "./components/Table/functions";
 
 // static header for the table, could be dynamic if needed but not necessary for this app.
 // would be moved to a constants file if this app were to grow.
@@ -22,7 +23,7 @@ export const headerRows: TableProps["headerRows"] = [
   { id: "employeeName", label: "Employee name" },
   { id: "startDate", label: "Start date" },
   { id: "endDate", label: "End date" },
-  { id: "approved", label: "Approved" },
+  { id: "approved", label: "Approved", sortable: false },
   { id: "absenceType", label: "Absence type" },
 ];
 const style = {
@@ -58,11 +59,15 @@ function App() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [open, setOpen] = useState<boolean>(false);
 
+  // Sorting state
+  const [order, setOrder] = useState<Order>("asc");
+  const [orderBy, setOrderBy] = useState<string>("employeeName");
+
   /* Map absences data to the format needed for the table.  
   This could be done in the hook but I prefer to keep hooks focused on data fetching and state management, and do any necessary data transformation in the component.
   */
   const mappedData = useMemo(() => {
-    return absences?.map(
+    const data = absences?.map(
       ({ id, employee, startDate, approved, absenceType, days }) => ({
         id,
         startDate: new Date(startDate).toLocaleDateString("en-GB"),
@@ -73,8 +78,10 @@ function App() {
         approved: approved ? "Yes" : "No",
         absenceType: getAbsenceTypeLabel(absenceType), // Convert to more user-friendly format
       }),
-    );
-  }, [absences]);
+    ) ?? [];
+
+    return [...data].sort(getComparator(order, orderBy as keyof typeof data[0]));
+  }, [absences, order, orderBy]);
 
   // Derive selected data from state (no setState needed)
   const selectedAbsence = selectedId
@@ -98,6 +105,15 @@ function App() {
     setSelectedId(null);
   };
 
+  const handleRequestSort = (
+    _event: React.MouseEvent<unknown>,
+    property: string,
+  ) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
   return (
     <>
       <Container>
@@ -109,6 +125,9 @@ function App() {
           width="100%"
           headerRows={headerRows}
           data={mappedData ?? undefined}
+          order={order}
+          orderBy={orderBy}
+          onRequestSort={handleRequestSort}
           selectRow={(id) => handleOpen(id)}
         />
       </Container>
