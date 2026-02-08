@@ -172,3 +172,20 @@ While some tests exist, more are needed for fuller coverage.
 - Utility functions should be tested in `utils.test.ts`
 - Hooks should handle their own loading and error states
 - Data transformation is done in components, keeping hooks focused on data fetching
+
+## Pre-commit Hooks
+
+**Note:** This is a tech test project, so pre-commit hooks are not currently configured. However, in a production application, I would implement pre-commit hooks to automatically run tests and linting before commits. This ensures code quality and test coverage are maintained throughout development.
+
+The pre-commit hooks would:
+- Run the test suite to catch any breaking changes
+- Run ESLint to enforce code style and best practices
+
+If either tests fail or linting issues are found, the commit would be blocked, allowing developers to fix the issues before committing.
+
+To set up pre-commit hooks in a production app, install [Husky](https://typicode.github.io/husky/) and configure your `.husky/pre-commit` hook to run:
+```bash
+npm test && npm run lint
+```
+
+This approach ensures that only code that passes tests and linting standards makes it into the repository.

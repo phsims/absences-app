@@ -11,3 +11,10 @@ export const getAbsenceTypeLabel = (absenceType: string) => {
     .toLowerCase()
     .replace(/\b\w/g, (c) => c.toUpperCase());
 };
+
+export const formatLabelIfIsoDate = (label: string): string => {
+  if (/^\d{4}-\d{2}-\d{2}/.test(label)) {
+    return new Date(label).toLocaleDateString("en-GB");
+  }
+  return label;
+};

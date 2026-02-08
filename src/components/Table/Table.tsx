@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 import { visuallyHidden } from "@mui/utils";
 import type { Order } from "./functions";
+import { formatLabelIfIsoDate } from "../../utils/utils";
 
 // * This is overkill for this app but a good example of a reusable table.  */
 export type TableRowProps = {
@@ -52,6 +53,8 @@ export function Table({
   onRequestSort,
 }: TableProps) {
 
+
+
   const createSortHandler =
     (property: keyof TableRowProps) => (event: React.MouseEvent<unknown>) => {
       onRequestSort(event, property);
@@ -80,7 +83,7 @@ export function Table({
                       direction={orderBy === id ? order : "asc"}
                       onClick={createSortHandler(id as keyof TableRowProps)}
                     >
-                      {label}
+                      {formatLabelIfIsoDate(label)}
                       {orderBy === id ? (
                         <Box component="span" sx={visuallyHidden}>
                           {order === "desc"
@@ -90,7 +93,7 @@ export function Table({
                       ) : null}
                     </TableSortLabel>
                   ) : (
-                    label
+                    formatLabelIfIsoDate(label)
                   )}
                 </TableCell>
               ))}
@@ -114,7 +117,7 @@ export function Table({
               >
                 {headerRows.map(({ id: headerId }) => (
                   <TableCell key={`${row.id}-${headerId}`}>
-                    {String(row[headerId] ?? "")}
+                    {formatLabelIfIsoDate(String(row[headerId] ?? ""))}
                   </TableCell>
                 ))}
               </TableRow>

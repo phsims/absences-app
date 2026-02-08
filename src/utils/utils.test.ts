@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getEndDate, getAbsenceTypeLabel } from './utils';
+import { getEndDate, getAbsenceTypeLabel, formatLabelIfIsoDate } from './utils';
 
 describe('utils', () => {
   describe('getEndDate', () => {
@@ -92,6 +92,38 @@ describe('utils', () => {
     it('handles mixed case input', () => {
       const result = getAbsenceTypeLabel('Annual_Leave');
       expect(result).toBe('Annual Leave');
+    });
+  });
+
+  describe('formatLabelIfIsoDate', () => {
+    it('formats ISO date string to en-GB locale', () => {
+      const result = formatLabelIfIsoDate('2026-02-08');
+      expect(result).toBe('08/02/2026');
+    });
+
+    it('formats ISO date string with timestamp', () => {
+      const result = formatLabelIfIsoDate('2026-02-08T10:30:00.000Z');
+      expect(result).toBe('08/02/2026');
+    });
+
+    it('formats ISO date string with different year', () => {
+      const result = formatLabelIfIsoDate('2020-03-31');
+      expect(result).toBe('31/03/2020');
+    });
+
+    it('returns non-ISO string unchanged', () => {
+      const result = formatLabelIfIsoDate('Start date');
+      expect(result).toBe('Start date');
+    });
+
+    it('returns empty string unchanged', () => {
+      const result = formatLabelIfIsoDate('');
+      expect(result).toBe('');
+    });
+
+    it('handles date with partial timestamp format', () => {
+      const result = formatLabelIfIsoDate('2021-10-19T06:48:24.8627');
+      expect(result).toBe('19/10/2021');
     });
   });
 });

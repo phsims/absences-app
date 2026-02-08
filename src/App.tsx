@@ -7,12 +7,17 @@ import {
   Container,
   List,
   ListItem,
+  ListItemText,
   Modal,
   Skeleton,
   Typography,
 } from "@mui/material";
 import { Table, type TableProps } from "./components/Table/Table";
-import { getAbsenceTypeLabel, getEndDate } from "./utils/utils";
+import {
+  formatLabelIfIsoDate,
+  getAbsenceTypeLabel,
+  getEndDate,
+} from "./utils/utils";
 import { getComparator, type Order } from "./components/Table/functions";
 
 // static header for the table, could be dynamic if needed but not necessary for this app.
@@ -67,20 +72,24 @@ function App() {
   This could be done in the hook but I prefer to keep hooks focused on data fetching and state management, and do any necessary data transformation in the component.
   */
   const mappedData = useMemo(() => {
-    const data = absences?.map(
-      ({ id, employee, startDate, approved, absenceType, days }) => ({
-        id,
-        startDate: new Date(startDate).toLocaleDateString("en-GB"),
-        endDate: new Date(getEndDate(startDate, days)).toLocaleDateString(
-          "en-GB",
-        ),
-        employeeName: `${employee.firstName} ${employee.lastName}`,
-        approved: approved ? "Yes" : "No",
-        absenceType: getAbsenceTypeLabel(absenceType), // Convert to more user-friendly format
-      }),
-    ) ?? [];
+    const data =
+      absences?.map(
+        ({ id, employee, startDate, approved, absenceType, days }) => {
+          const endDateIso = getEndDate(startDate, days);
+          return {
+            id,
+            startDate,
+            endDate: endDateIso,
+            employeeName: `${employee.firstName} ${employee.lastName}`,
+            approved: approved ? "Yes" : "No",
+            absenceType: getAbsenceTypeLabel(absenceType), // Convert to more user-friendly format
+          };
+        },
+      ) ?? [];
 
-    return [...data].sort(getComparator(order, orderBy as keyof typeof data[0]));
+    return [...data].sort(
+      getComparator(order, orderBy as keyof (typeof data)[0]),
+    );
   }, [absences, order, orderBy]);
 
   // Derive selected data from state (no setState needed)
@@ -124,7 +133,7 @@ function App() {
           height={300}
           width="100%"
           headerRows={headerRows}
-          data={mappedData ?? undefined}
+          data={mappedData}
           order={order}
           orderBy={orderBy}
           onRequestSort={handleRequestSort}
@@ -139,50 +148,48 @@ function App() {
       >
         <Box sx={style}>
           <Box sx={{ mb: 4 }}>
-          <Typography id="modal-modal-title" variant="h6" component="h2" >
-            Conflicts
-          </Typography>
-          {loadingConflict ? (
-            <Skeleton
-              width="100%"
-              height={100}
-              aria-label="conflict loading"
-              data-testid="conflict-loading"
-            />
-          ) : conflict?.conflicts ? (
-            <Typography variant="body1">
-              Conflict found for {selectedAbsence?.employee.firstName}{" "}
-              {selectedAbsence?.employee.lastName}'s absence starting on{" "}
-              {new Date(selectedAbsence?.startDate ?? "").toLocaleDateString(
-                "en-GB",
-              )}
-              .
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              Conflicts
             </Typography>
-          ) : (
-            <Typography variant="body1" >
-              No conflicts found for this absence.
-            </Typography>
-          )}
+            {loadingConflict ? (
+              <Skeleton
+                width="100%"
+                height={100}
+                aria-label="conflict loading"
+                data-testid="conflict-loading"
+              />
+            ) : conflict?.conflicts ? (
+              <Typography variant="body1">
+                Conflict found for {selectedAbsence?.employee.firstName}{" "}
+                {selectedAbsence?.employee.lastName}'s absence starting on{" "}
+                {new Date(selectedAbsence?.startDate ?? "").toLocaleDateString(
+                  "en-GB",
+                )}
+                .
+              </Typography>
+            ) : (
+              <Typography variant="body1">
+                No conflicts found for this absence.
+              </Typography>
+            )}
           </Box>
-            <Box>
-          <Typography id="modal-modal-title" variant="h6" component="h2" >
-            All Absences
-          </Typography>
-          {selectedUserAbsences ? (
-            <List>
-              {selectedUserAbsences.map((absence) => (
-                <ListItem key={absence.id}>
-                  {getAbsenceTypeLabel(absence.absenceType)} from{" "}
-                  {new Date(absence.startDate).toLocaleDateString("en-GB")} to{" "}
-                  {new Date(
-                    getEndDate(absence.startDate, absence.days),
-                  ).toLocaleDateString("en-GB")}
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>No absences found.</Typography>
-          )}
+          <Box>
+            <Typography id="modal-modal-title" variant="h6" component="h2">
+              All Absences
+            </Typography>
+            {selectedUserAbsences ? (
+              <List>
+                {selectedUserAbsences.map((absence) => (
+                  <ListItem key={absence.id}>
+                    <ListItemText
+                      primary={`${getAbsenceTypeLabel(absence.absenceType)} from ${formatLabelIfIsoDate(absence.startDate)} to ${formatLabelIfIsoDate(getEndDate(absence.startDate, absence.days))}`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Typography>No absences found.</Typography>
+            )}
           </Box>
         </Box>
       </Modal>
