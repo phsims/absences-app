@@ -2,7 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import { useAbsences } from "./hooks/useAbsences";
 import { useConflict } from "./hooks/useConflict";
-import { Box, Container, Modal, Skeleton, Typography } from "@mui/material";
+import {
+  Box,
+  Container,
+  List,
+  ListItem,
+  Modal,
+  Skeleton,
+  Typography,
+} from "@mui/material";
 import { Table, type TableProps } from "./components/Table/Table";
 import { getAbsenceTypeLabel, getEndDate } from "./utils/utils";
 
@@ -50,7 +58,9 @@ function App() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [open, setOpen] = useState<boolean>(false);
 
-  // Map absences data to the format needed for the table.  */
+  /* Map absences data to the format needed for the table.  
+  This could be done in the hook but I prefer to keep hooks focused on data fetching and state management, and do any necessary data transformation in the component.
+  */
   const mappedData = useMemo(() => {
     return absences?.map(
       ({ id, employee, startDate, approved, absenceType, days }) => ({
@@ -71,6 +81,11 @@ function App() {
     ? absences?.find((absence) => absence.id === selectedId)
     : null;
 
+  const selectedUserAbsences = selectedAbsence
+    ? absences?.filter(
+        (absence) => absence.employee.id === selectedAbsence.employee.id,
+      )
+    : null;
 
   const handleOpen = (id: number) => {
     setSelectedId(id);
@@ -104,8 +119,17 @@ function App() {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
+          <Box sx={{ mb: 4 }}>
+          <Typography id="modal-modal-title" variant="h6" component="h2" >
+            Conflicts
+          </Typography>
           {loadingConflict ? (
-            <Skeleton width="100%" height={100} aria-label="conflict loading" data-testid="conflict-loading" />
+            <Skeleton
+              width="100%"
+              height={100}
+              aria-label="conflict loading"
+              data-testid="conflict-loading"
+            />
           ) : conflict?.conflicts ? (
             <Typography variant="body1">
               Conflict found for {selectedAbsence?.employee.firstName}{" "}
@@ -116,10 +140,31 @@ function App() {
               .
             </Typography>
           ) : (
-            <Typography variant="body1">
+            <Typography variant="body1" >
               No conflicts found for this absence.
             </Typography>
           )}
+          </Box>
+            <Box>
+          <Typography id="modal-modal-title" variant="h6" component="h2" >
+            All Absences
+          </Typography>
+          {selectedUserAbsences ? (
+            <List>
+              {selectedUserAbsences.map((absence) => (
+                <ListItem key={absence.id}>
+                  {getAbsenceTypeLabel(absence.absenceType)} from{" "}
+                  {new Date(absence.startDate).toLocaleDateString("en-GB")} to{" "}
+                  {new Date(
+                    getEndDate(absence.startDate, absence.days),
+                  ).toLocaleDateString("en-GB")}
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography>No absences found.</Typography>
+          )}
+          </Box>
         </Box>
       </Modal>
     </>
