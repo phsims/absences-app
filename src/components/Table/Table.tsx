@@ -9,10 +9,12 @@ import {
 } from "@mui/material";
 
 // * This is overkill for this app but a good example of a reusable table.  */
-export type TableRowProps = Record<string, string | number | boolean>;
+export type TableRowProps = {
+  id: number;
+} & Record<string, string | number | boolean>;
 
 export type HeaderCellProps = {
-  id: string;
+  id: string | number;
   label: string;
 };
 
@@ -23,6 +25,7 @@ export type TableProps = {
   error?: string;
   headerRows: HeaderCellProps[];
   data?: TableRowProps[];
+  selectRow: (id: number) => void;
 };
 
 export function Table({
@@ -32,6 +35,7 @@ export function Table({
   error,
   headerRows,
   data,
+  selectRow
 }: TableProps) {
   if (loading) {
     return (
@@ -60,10 +64,10 @@ export function Table({
             </TableRow>
           ) : (
             data?.map((row) => (
-              <TableRow key={row.id} data-testid={row.id}>
-                {headerRows.map(({ id }) => (
-                  <TableCell key={`${row.id}-${id}`}>
-                    {String(row[id] ?? "")}
+              <TableRow key={row.id.toString()} data-testid={row.id} onClick={() => selectRow(row.id)}  sx={{ ":hover": { backgroundColor: 'info.light' } }} >
+                {headerRows.map(({ id: headerId }) => (
+                  <TableCell key={`${row.id}-${headerId}`}>
+                    {String(row[headerId] ?? "")}
                   </TableCell>
                 ))}
               </TableRow>
