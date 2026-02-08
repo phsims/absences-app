@@ -25,6 +25,14 @@ The Absences App displays a sortable table of employee absences, allowing users 
 npm install
 ```
 
+3. Create a `.env` file in the root directory with the following environment variable:
+
+```
+VITE_BASE_API=https://front-end-kata.brighthr.workers.dev/api
+```
+
+This API endpoint is required for the app to fetch absence and conflict data.
+
 ## Running the Application
 
 ### Development Server
