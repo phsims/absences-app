@@ -1,4 +1,4 @@
-# Absences App
+# Absences App - Tech test repo for https://github.com/brighthr/Front-End-Tech-Tasks/blob/main/senior-and-principal.md
 
 A React-based web application for managing and viewing employee absence records with conflict detection capabilities.
 
